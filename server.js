@@ -52,13 +52,24 @@ app.get('/users/:id', async (req, res, next) => {
 
 // ตัวอย่าง POST ข้อมูล
 app.post('/users', async (req, res) => {
-  const { firstname, fullname, lastname } = req.body;
+  const { firstname, fullname, lastname, username, password, status } = req.body;
   try {
-    const [result] = await db.query('INSERT INTO tbl_users (firstname, fullname, lastname) VALUES (?, ?, ?)', [firstname, fullname, lastname]);
-    res.json({ id: result.insertId, firstname, fullname, lastname });
+    const [result] = await db.query('INSERT INTO tbl_users (firstname, fullname, lastname, username, password, status) VALUES (?, ?, ?, ?, ?, ?)', [firstname, fullname, lastname, username, password, status]);
+    res.json({ id: result.insertId, firstname, fullname, lastname, username, password, status });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Insert failed' });
+  }
+});
+
+app.delete('/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.query('DELETE FROM tbl_users WHERE id = ?', [id]);
+    res.json({ message: `User ${id} deleted` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Delete failed' });
   }
 });
 

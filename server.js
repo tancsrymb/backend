@@ -36,6 +36,33 @@ app.get('/users', async (req, res) => {
   }
 });
 
+// GET /users/:id - ดึงข้อมูลผู้ใช้ตาม id
+app.get('/users/:id', async (req, res, next) => {
+  const { id } = req.params; // ดึง id จาก URL เช่น /users/3
+  try {
+    const [rows] = await db.query('SELECT * FROM tbl_users WHERE id = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(rows[0]); // ส่งผู้ใช้คนเดียวกลับไป
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ตัวอย่าง POST ข้อมูล
+app.post('/users', async (req, res) => {
+  const { firstname, fullname, lastname } = req.body;
+  try {
+    const [result] = await db.query('INSERT INTO tbl_users (firstname, fullname, lastname) VALUES (?, ?, ?)', [firstname, fullname, lastname]);
+    res.json({ id: result.insertId, firstname, fullname, lastname });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Insert failed' });
+  }
+});
+
+
 // เริ่มเซิร์ฟเวอร์
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

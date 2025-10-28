@@ -3,6 +3,7 @@ require('dotenv').config(); // โหลดค่าจาก .env
 
 const express = require('express');
 const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt'); //เพิ่ม bcrypt
 const app = express();
 
 app.use(express.json());
@@ -62,6 +63,7 @@ app.post('/users', async (req, res) => {
   }
 });
 
+// DELETE /users/:id - ลบผู้ใช้ตาม id
 app.delete('/users/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -70,6 +72,27 @@ app.delete('/users/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Delete failed' });
+  }
+});
+
+//PUT /users/:id - แก้ไขข้อมูลผู้ใช้
+app.put('/users/:id', async (req, res) => {
+  const { id } = req.params;
+  const { firstname, fullname, lastname } = req.body;
+  try {
+    const { firstname, fullname, lastname, username, password, status } = req.body;
+    const [result] = await db.query(
+        'UPDATE tbl_users SET firstname = ?, fullname = ?, lastname = ?, username = ?, password = ?, status = ? WHERE id = ?',
+        [firstname, fullname, lastname, username, password, status, id]
+    );  
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ message: 'User updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Update failed' });
   }
 });
 
